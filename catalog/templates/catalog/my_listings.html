@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load core_extras %}
+{% block title %}My listings{% endblock %}
+{% block content %}
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="mb-0">My listings</h1>
+    <a href="{% url 'catalog:create_book' %}" class="btn btn-primary">List a book</a>
+  </div>
+
+  {% if books %}
+    <div class="table-responsive">
+      <table class="table align-middle bg-white">
+        <thead>
+          <tr><th>Book</th><th>Condition</th><th class="text-end">Price</th><th class="text-end">Copies</th><th>Trading</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for book in books %}
+            <tr>
+              <td>
+                <a href="{{ book.get_absolute_url }}">{{ book.title }}</a>
+                <div class="small text-muted">{{ book.author }} &middot; listed {{ book.created_at|date:"j M Y" }}</div>
+              </td>
+              <td>{% include 'catalog/includes/condition_badge.html' %}</td>
+              <td class="text-end">{{ book.price|currency }}</td>
+              <td class="text-end">{{ book.stock }}</td>
+              <td>{% if book.open_to_trade %}Open to swaps{% else %}Sale only{% endif %}</td>
+              <td class="text-end text-nowrap">
+                <a href="{% url 'catalog:edit_book' book.id %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                <a href="{% url 'catalog:delete_book' book.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include 'core/includes/pagination.html' %}
+  {% else %}
+    <div class="alert alert-info">You haven't listed any books yet.</div>
+  {% endif %}
+{% endblock %}

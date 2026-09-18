@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}My trades{% endblock %}
+{% block content %}
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="mb-0">My trades</h1>
+    <a href="{% url 'trading:browse' %}" class="btn btn-outline-primary">Find books to swap</a>
+  </div>
+
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <a class="nav-link{% if box == 'received' %} active{% endif %}" href="?box=received"
+         {% if box == 'received' %}aria-current="page"{% endif %}>
+        Offers on my books{% if pending_offer_count %} <span class="badge text-bg-danger">{{ pending_offer_count }}</span>{% endif %}
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link{% if box == 'sent' %} active{% endif %}" href="?box=sent"
+         {% if box == 'sent' %}aria-current="page"{% endif %}>Offers I sent</a>
+    </li>
+  </ul>
+
+  {% if trades %}
+    <div class="table-responsive">
+      <table class="table align-middle bg-white">
+        <thead>
+          <tr>
+            <th>{% if box == 'sent' %}You asked for{% else %}Your book{% endif %}</th>
+            <th>{% if box == 'sent' %}You offered{% else %}Offered in exchange{% endif %}</th>
+            <th>{% if box == 'sent' %}Owner{% else %}From{% endif %}</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for trade in trades %}
+            <tr>
+              <td>
+                <a href="{{ trade.book_wanted.get_absolute_url }}">{{ trade.book_wanted.title }}</a>
+                <div class="small text-muted">{{ trade.book_wanted.get_condition_display }}</div>
+              </td>
+              <td>
+                <a href="{{ trade.offered_book.get_absolute_url }}">{{ trade.offered_book.title }}</a>
+                <div class="small text-muted">{{ trade.offered_book.get_condition_display }}</div>
+                {% if trade.message %}<div class="small fst-italic">&ldquo;{{ trade.message }}&rdquo;</div>{% endif %}
+              </td>
+              <td>
+                {% if box == 'sent' %}{{ trade.book_wanted.posted_by.get_username }}{% else %}{{ trade.requester.get_username }}{% endif %}
+                <div class="small text-muted">{{ trade.created_at|date:"j M Y" }}</div>
+              </td>
+              <td>
+                <span class="badge {% if trade.status == 'accepted' %}text-bg-success{% elif trade.status == 'declined' %}text-bg-secondary{% else %}text-bg-warning{% endif %}">
+                  {{ trade.get_status_display }}
+                </span>
+              </td>
+              <td class="text-end text-nowrap">
+                {% if trade.is_pending %}
+                  {% if box == 'received' %}
+                    <form method="post" action="{% url 'trading:accept' trade.pk %}" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-success">Accept</button>
+                    </form>
+                    <form method="post" action="{% url 'trading:decline' trade.pk %}" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-outline-secondary">Decline</button>
+                    </form>
+                  {% else %}
+                    <form method="post" action="{% url 'trading:withdraw' trade.pk %}" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-outline-danger">Withdraw</button>
+                    </form>
+                  {% endif %}
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include 'core/includes/pagination.html' %}
+  {% elif box == 'sent' %}
+    <div class="alert alert-info">You haven't offered any swaps yet.</div>
+  {% else %}
+    <div class="alert alert-info">Nobody has offered a swap for your books yet.</div>
+  {% endif %}
+{% endblock %}

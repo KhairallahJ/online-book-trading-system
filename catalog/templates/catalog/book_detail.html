@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load core_extras %}
+{% block title %}{{ book.title }}{% endblock %}
+{% block content %}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'catalog:book_list' %}">Books</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'catalog:genre_books' book.genre.name %}">{{ book.genre.name }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ book.title }}</li>
+    </ol>
+  </nav>
+
+  <div class="row g-4 g-xl-5">
+    <div class="col-sm-5 col-lg-3">
+      {% include 'catalog/includes/book_cover.html' with large=True %}
+    </div>
+    <div class="col-sm-7 col-lg-5">
+      <p class="eyebrow mb-1">{{ book.genre.name }}</p>
+      <h1 class="mb-1">{{ book.title }}</h1>
+      <p class="lead">by <a href="{{ book.author.get_absolute_url }}">{{ book.author }}</a></p>
+      <dl class="row">
+        <dt class="col-sm-3">Condition</dt>
+        <dd class="col-sm-9">{% include 'catalog/includes/condition_badge.html' %}</dd>
+        <dt class="col-sm-3">Genre</dt>
+        <dd class="col-sm-9"><a href="{% url 'catalog:genre_books' book.genre.name %}">{{ book.genre.name }}</a></dd>
+        <dt class="col-sm-3">ISBN</dt>
+        <dd class="col-sm-9">{{ book.isbn }}</dd>
+        <dt class="col-sm-3">Listed by</dt>
+        <dd class="col-sm-9">{{ book.posted_by.get_username }} on {{ book.created_at|date:"j M Y" }}</dd>
+        <dt class="col-sm-3">Trading</dt>
+        <dd class="col-sm-9">{% if book.open_to_trade %}Open to swaps{% else %}Sale only{% endif %}</dd>
+      </dl>
+      {% if book.author.bio %}
+        <h2 class="h5">About the author</h2>
+        <p>{{ book.author.bio }}</p>
+      {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card card-body buy-box">
+        <div class="price fs-2">{{ book.price|currency }}</div>
+        {% if not book.in_stock %}
+          <p class="text-danger mb-0">Out of stock</p>
+        {% elif is_own_listing %}
+          <p class="text-success">In stock: {{ book.stock }}</p>
+          <div class="alert alert-secondary mb-0">This is your listing.</div>
+        {% else %}
+          <p class="text-success">In stock: {{ book.stock }}</p>
+          {% if user.is_authenticated %}
+            <form method="post" action="{% url 'orders:cart_add' book.id %}" class="d-flex gap-2">
+              {% csrf_token %}
+              <label for="quantity" class="visually-hidden">Quantity</label>
+              <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ book.stock }}"
+                     class="form-control" style="max-width: 6rem">
+              <button type="submit" class="btn btn-primary flex-grow-1">Add to cart</button>
+            </form>
+            {% if book.open_to_trade %}
+              <a href="{% url 'trading:propose' book.id %}" class="btn btn-outline-primary w-100 mt-2">Offer a swap</a>
+            {% endif %}
+          {% else %}
+            <div class="alert alert-info mb-0">
+              Please <a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">log in</a> to buy or swap this book.
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+      {% if can_edit %}
+        <div class="d-flex gap-2 mt-3">
+          <a href="{% url 'catalog:edit_book' book.id %}" class="btn btn-outline-secondary flex-grow-1">Edit listing</a>
+          <a href="{% url 'catalog:delete_book' book.id %}" class="btn btn-outline-danger">Delete</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

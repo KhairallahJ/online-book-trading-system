@@ -1,0 +1,6 @@
+{% load core_extras %}{# A generated cover, tinted from the title. Pass large=True for the book page. #}
+<div class="book-cover{% if large %} book-cover-lg{% endif %} {{ book.title|cover_title_class }}"
+     style="--cover-hue: {{ book.title|cover_hue }}" aria-hidden="true">
+  <span class="book-cover-title">{{ book.title }}</span>
+  <span class="book-cover-author">{{ book.author }}</span>
+</div>

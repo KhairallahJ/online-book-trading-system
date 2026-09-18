@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load core_extras %}
+{% block title %}Checkout{% endblock %}
+{% block content %}
+  <h1>Checkout</h1>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <form method="post" class="card card-body" novalidate>
+        <h2 class="h5">Shipping details</h2>
+        {% csrf_token %}
+        {% include 'core/includes/form_fields.html' %}
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success">Place order ({{ total|currency }})</button>
+          <a href="{% url 'orders:cart' %}" class="btn btn-outline-secondary">Back to cart</a>
+        </div>
+      </form>
+    </div>
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-header">Order summary</div>
+        <ul class="list-group list-group-flush">
+          {% for line in lines %}
+            <li class="list-group-item d-flex justify-content-between">
+              <span>{{ line.quantity }} × {{ line.title }}</span>
+              <span>{{ line.subtotal|currency }}</span>
+            </li>
+          {% endfor %}
+          <li class="list-group-item d-flex justify-content-between fw-bold">
+            <span>Total</span><span>{{ total|currency }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+{% endblock %}

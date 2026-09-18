@@ -1,0 +1,24 @@
+{% load core_extras %}
+<article class="card listing-card h-100">
+  <div class="card-body d-flex gap-3">
+    {% include 'catalog/includes/book_cover.html' %}
+    <div class="d-flex flex-column flex-grow-1 min-w-0">
+      <h2 class="h6 card-title mb-1">
+        <a class="stretched-link" href="{% url 'catalog:book_detail' book.id %}">{{ book.title }}</a>
+      </h2>
+      <p class="card-text text-body-secondary small mb-2">{{ book.author }} &middot; {{ book.genre }}</p>
+      <p class="card-text small mb-auto d-flex flex-wrap gap-1">
+        {% include 'catalog/includes/condition_badge.html' %}
+        {% if book.open_to_trade %}<span class="badge badge-soft">Open to swaps</span>{% endif %}
+      </p>
+      <div class="d-flex justify-content-between align-items-end mt-2">
+        <span class="price">{{ book.price|currency }}</span>
+        {% if book.in_stock %}
+          <small class="text-body-secondary">{{ book.stock }} left</small>
+        {% else %}
+          <small class="text-danger">Out of stock</small>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load core_extras %}
+{% block title %}Order {{ order.number }}{% endblock %}
+{% block content %}
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="mb-0">Order {{ order.number }}</h1>
+    <span class="badge fs-6 {% if order.status == 'cancelled' %}text-bg-secondary{% elif order.status == 'shipped' %}text-bg-success{% else %}text-bg-primary{% endif %}">
+      {{ order.get_status_display }}
+    </span>
+  </div>
+  <p class="text-muted">Placed {{ order.created_at|date:"j M Y, H:i" }}</p>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <table class="table align-middle bg-white">
+        <thead>
+          <tr><th>Book</th><th class="text-end">Price</th><th class="text-end">Qty</th><th class="text-end">Subtotal</th></tr>
+        </thead>
+        <tbody>
+          {% for item in order.items.all %}
+            <tr>
+              <td>
+                {% if item.book_id %}<a href="{% url 'catalog:book_detail' item.book_id %}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}
+              </td>
+              <td class="text-end">{{ item.unit_price|currency }}</td>
+              <td class="text-end">{{ item.quantity }}</td>
+              <td class="text-end">{{ item.subtotal|currency }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr><th colspan="3" class="text-end">Total</th><th class="text-end">{{ order.total|currency }}</th></tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="col-lg-4">
+      <div class="card card-body">
+        <h2 class="h6">Shipping to</h2>
+        <p class="mb-0">{{ order.full_name }}<br>{{ order.shipping_address|linebreaksbr }}<br>{{ order.email }}</p>
+      </div>
+      {% if order.can_cancel %}
+        <form method="post" action="{% url 'orders:cancel' order.pk %}" class="mt-3">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-danger w-100">Cancel order</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <a href="{% url 'orders:list' %}" class="btn btn-link px-0">&larr; All orders</a>
+{% endblock %}

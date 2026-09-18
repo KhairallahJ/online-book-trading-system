@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}{% if book %}Edit listing{% else %}List a book{% endif %}{% endblock %}
+{% block content %}
+  <h1>{% if book %}Edit {{ book.title }}{% else %}List a book{% endif %}</h1>
+  <form method="post" class="col-lg-8" novalidate>
+    {% csrf_token %}
+    {% include 'core/includes/form_fields.html' %}
+    <button type="submit" class="btn btn-success">
+      {% if book %}Save changes{% else %}Publish listing{% endif %}
+    </button>
+    <a href="{% if book %}{{ book.get_absolute_url }}{% else %}{% url 'catalog:my_listings' %}{% endif %}" class="btn btn-link">Cancel</a>
+  </form>
+{% endblock %}

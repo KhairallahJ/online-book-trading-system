@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Offer a swap for {{ book.title }}{% endblock %}
+{% block content %}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'trading:browse' %}">Swap books</a></li>
+      <li class="breadcrumb-item"><a href="{{ book.get_absolute_url }}">{{ book.title }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Offer a swap</li>
+    </ol>
+  </nav>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card card-body">
+        <h1 class="h3">Offer a swap</h1>
+        <p>
+          You'd like <strong>{{ book.title }}</strong> by {{ book.author }} from {{ book.posted_by.get_username }}
+          {% include 'catalog/includes/condition_badge.html' %}.
+          Choose one of your books to offer in return.
+        </p>
+        {% if form.fields.offered_book.queryset.exists %}
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% include 'core/includes/form_fields.html' %}
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary">Send offer</button>
+              <a href="{{ book.get_absolute_url }}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        {% else %}
+          <div class="alert alert-info mb-0">
+            You need a book in stock to offer. <a href="{% url 'catalog:create_book' %}">List a book</a> first.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card card-body small text-muted">
+        <h2 class="h6 text-body">How swaps work</h2>
+        <ol class="mb-0 ps-3">
+          <li>The owner sees your offer under <em>My trades</em>.</li>
+          <li>If they accept, one copy of each book is taken out of stock.</li>
+          <li>You then arrange the exchange with each other.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+{% endblock %}
